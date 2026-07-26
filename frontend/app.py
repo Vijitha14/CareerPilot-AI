@@ -6,7 +6,7 @@ import requests
 # CONFIG
 # =========================================================
 
-API_URL = "http://127.0.0.1:8000/analyze"
+API_URL = "https://careerpilot-ai-o58j.onrender.com/analyze"
 
 st.set_page_config(
     page_title="CareerPilot AI",
