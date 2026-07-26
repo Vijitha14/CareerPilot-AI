@@ -298,25 +298,7 @@ The Streamlit frontend communicates with the deployed FastAPI REST API hosted on
 
 ---
 
-## 📸 Screenshots
 
-### Home Page
-
-_Add screenshot here_
-
-### Career Discovery
-
-_Add screenshot here_
-
-### ATS Resume Health
-
-_Add screenshot here_
-
-### Resume Improvements
-
-_Add screenshot here_
-
----
 
 ## 🔮 Future Improvements
 
