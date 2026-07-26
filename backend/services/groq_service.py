@@ -406,3 +406,121 @@ rewrite them safely.
     result_text = response.choices[0].message.content
 
     return json.loads(result_text)
+def generate_gap_action_plan(candidate_evidence, job_context, job_fit_analysis):
+    """
+    Generate practical actions for the candidate's most important
+    job-fit gaps.
+
+    Actions must be grounded in the supplied resume evidence and
+    actual job requirements.
+    """
+
+    prompt = f"""
+You are the improvement-planning engine inside CareerPilot AI.
+
+Your job is to turn a candidate's JOB FIT GAPS into a practical,
+realistic action plan.
+
+CANDIDATE EVIDENCE:
+
+{json.dumps(candidate_evidence, indent=2)}
+
+JOB CONTEXT:
+
+{json.dumps(job_context, indent=2)}
+
+JOB FIT ANALYSIS:
+
+{json.dumps(job_fit_analysis, indent=2)}
+
+IMPORTANT RULES:
+
+1. Only address gaps that are relevant to the supplied job.
+2. Prioritize gaps using their importance in the job-fit analysis.
+3. Do not invent experience the candidate does not have.
+4. Do not tell the candidate to falsely add skills to their resume.
+5. Recommend actions that would create DEMONSTRABLE evidence.
+6. Prefer practical actions such as:
+   - improving an existing project
+   - building a focused project feature
+   - contributing to open source
+   - deploying something
+   - writing tests
+   - demonstrating a technology through actual implementation
+7. Avoid generic advice such as:
+   "learn more", "practice coding", or "take a course"
+   unless accompanied by a concrete deliverable.
+8. Keep actions realistic for a student or early-career candidate.
+9. Do not claim completing an action guarantees employment.
+10. Rank the most important gaps first.
+
+Return ONLY valid JSON in this exact structure:
+
+{{
+    "readiness_summary": "Short assessment of how close the candidate is to being well-aligned with this job.",
+
+    "priority_actions": [
+        {{
+            "gap": "Capability currently missing or insufficiently demonstrated",
+
+            "priority": "high/medium/low",
+
+            "current_evidence": "What the resume currently demonstrates, if anything",
+
+            "why_it_matters": "Why this capability matters for the supplied job",
+
+            "action": "Specific practical action the candidate should take",
+
+            "deliverable": "Concrete thing the candidate should produce or implement",
+
+            "resume_evidence_after": "Example of the TYPE of evidence this work could legitimately create for the resume, without inventing results"
+        }}
+    ],
+
+    "quick_wins": [
+        "Small improvement that can strengthen alignment relatively quickly"
+    ],
+
+    "project_upgrade": {{
+        "project_direction": "A practical way to upgrade an existing or new project to address important gaps",
+
+        "capabilities_demonstrated": [
+            "Capability this project upgrade would demonstrate"
+        ]
+    }},
+
+    "next_best_action": "The single most useful next action for this candidate."
+}}
+
+Return no more than 5 priority actions.
+
+If the candidate already demonstrates a capability strongly,
+do not recommend rebuilding evidence for it.
+
+Focus on turning missing capabilities into credible,
+demonstrable resume evidence.
+"""
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a rigorous career improvement planning engine. "
+                    "Turn demonstrated job-fit gaps into concrete, ethical, "
+                    "evidence-building actions."
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        temperature=0.2,
+        response_format={"type": "json_object"},
+    )
+
+    result_text = response.choices[0].message.content
+
+    return json.loads(result_text)

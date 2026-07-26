@@ -188,12 +188,15 @@ if analyze:
                     "job_description": job_description
                 }
 
-                response = requests.post(
-                    API_URL,
-                    files=files,
-                    data=data,
-                    timeout=120,
-                )
+                with st.spinner(
+                    "Analyzing your resume... CareerPilot is reading your experience, skills, and projects."
+                ):
+                    response = requests.post(
+                        API_URL,
+                        files=files,
+                        data=data,
+                        timeout=120,
+    )
 
 
             # =====================================================
@@ -671,6 +674,246 @@ if analyze:
                                 st.write(
                                     reason
                                 )
+                    # ---------------------------------------------
+                    # GAP ACTION PLAN
+                    # ---------------------------------------------
+
+                    gap_action_plan = result.get(
+                        "gap_action_plan",
+                        {},
+                    )
+
+                    if gap_action_plan:
+
+                        st.markdown("---")
+                        st.markdown(
+                            "## 🎯 Job Gap Action Plan"
+                        )
+
+
+                        # -----------------------------------------
+                        # READINESS SUMMARY
+                        # -----------------------------------------
+
+                        readiness_summary = gap_action_plan.get(
+                            "readiness_summary",
+                            "",
+                        )
+
+                        if readiness_summary:
+
+                            st.markdown(
+                                "### Your readiness"
+                            )
+
+                            st.info(
+                                readiness_summary
+                            )
+
+
+                        # -----------------------------------------
+                        # PRIORITY ACTIONS
+                        # -----------------------------------------
+
+                        priority_actions = gap_action_plan.get(
+                            "priority_actions",
+                            [],
+                        )
+
+                        if priority_actions:
+
+                            st.markdown(
+                                "### What to work on"
+                            )
+
+                            priority_icons = {
+                                "high": "🔴",
+                                "medium": "🟡",
+                                "low": "🟢",
+                            }
+
+                            for action_item in priority_actions:
+
+                                gap = action_item.get(
+                                    "gap",
+                                    "Skill gap",
+                                )
+
+                                priority = action_item.get(
+                                    "priority",
+                                    "medium",
+                                )
+
+                                current_evidence = action_item.get(
+                                    "current_evidence",
+                                    "",
+                                )
+
+                                why_it_matters = action_item.get(
+                                    "why_it_matters",
+                                    "",
+                                )
+
+                                action = action_item.get(
+                                    "action",
+                                    "",
+                                )
+
+                                deliverable = action_item.get(
+                                    "deliverable",
+                                    "",
+                                )
+
+                                resume_evidence = action_item.get(
+                                    "resume_evidence_after",
+                                    "",
+                                )
+
+                                icon = priority_icons.get(
+                                    priority.lower(),
+                                    "•",
+                                )
+
+                                with st.expander(
+                                    f"{icon} {priority.title()} priority · {gap}"
+                                ):
+
+                                    if current_evidence:
+
+                                        st.markdown(
+                                            "**What you already have**"
+                                        )
+
+                                        st.write(
+                                            current_evidence
+                                        )
+
+                                    if why_it_matters:
+
+                                        st.markdown(
+                                            "**Why this matters**"
+                                        )
+
+                                        st.write(
+                                            why_it_matters
+                                        )
+
+                                    if action:
+
+                                        st.markdown(
+                                            "**What to do next**"
+                                        )
+
+                                        st.success(
+                                            action
+                                        )
+
+                                    if deliverable:
+
+                                        st.markdown(
+                                            "**Target deliverable**"
+                                        )
+
+                                        st.write(
+                                            deliverable
+                                        )
+
+                                    if resume_evidence:
+
+                                        st.markdown(
+                                            "**Resume evidence you can earn**"
+                                        )
+
+                                        st.code(
+                                            resume_evidence,
+                                            language=None,
+                                        )
+
+
+                        # -----------------------------------------
+                        # QUICK WINS
+                        # -----------------------------------------
+
+                        quick_wins = gap_action_plan.get(
+                            "quick_wins",
+                            [],
+                        )
+
+                        if quick_wins:
+
+                            st.markdown(
+                                "### ⚡ Quick wins"
+                            )
+
+                            for quick_win in quick_wins:
+
+                                st.markdown(
+                                    f"✓ {quick_win}"
+                                )
+
+
+                        # -----------------------------------------
+                        # PROJECT UPGRADE
+                        # -----------------------------------------
+
+                        project_upgrade = gap_action_plan.get(
+                            "project_upgrade",
+                            {},
+                        )
+
+                        if project_upgrade:
+
+                            st.markdown(
+                                "### 🚀 Project upgrade"
+                            )
+
+                            project_direction = project_upgrade.get(
+                                "project_direction",
+                                "",
+                            )
+
+                            capabilities = project_upgrade.get(
+                                "capabilities_demonstrated",
+                                [],
+                            )
+
+                            if project_direction:
+
+                                st.write(
+                                    project_direction
+                                )
+
+                            if capabilities:
+
+                                st.markdown(
+                                    "**What this would demonstrate**"
+                                )
+
+                                for capability in capabilities:
+
+                                    st.markdown(
+                                        f"- {capability}"
+                                    )
+
+
+                        # -----------------------------------------
+                        # NEXT BEST ACTION
+                        # -----------------------------------------
+
+                        next_best_action = gap_action_plan.get(
+                            "next_best_action",
+                            "",
+                        )
+
+                        if next_best_action:
+
+                            st.markdown(
+                                "### Your next move"
+                            )
+
+                            st.success(
+                                next_best_action
+                            )
 
 
                     # ---------------------------------------------
@@ -1096,40 +1339,91 @@ if analyze:
                         [],
                     )
 
-                    if bullet_improvements:
+                    # Keep only valid bullet improvement objects
+                    valid_bullet_improvements = []
+
+                    if isinstance(bullet_improvements, list):
+
+                        for bullet in bullet_improvements:
+
+                            if not isinstance(bullet, dict):
+                                continue
+
+                            current = str(
+                                bullet.get("current", "") or ""
+                            ).strip()
+
+                            problem = str(
+                                bullet.get("problem", "") or ""
+                            ).strip()
+
+                            suggested = str(
+                                bullet.get("suggested_rewrite", "") or ""
+                            ).strip()
+
+                            # Do not display completely empty AI responses
+                            if current or problem or suggested:
+
+                                valid_bullet_improvements.append(
+                                    {
+                                        "current": current,
+                                        "problem": problem,
+                                        "suggested_rewrite": suggested,
+                                    }
+                                )
+
+
+                    if valid_bullet_improvements:
 
                         st.markdown(
                             "### Suggested bullet rewrites"
                         )
 
                         st.caption(
-                            "Rewrites improve clarity while preserving "
-                            "the information already supported by your resume."
+                            "Rewrites improve clarity and impact while "
+                            "preserving information supported by your resume."
                         )
 
                         for index, bullet in enumerate(
-                            bullet_improvements,
+                            valid_bullet_improvements,
                             start=1,
                         ):
 
-                            current = bullet.get(
-                                "current",
-                                "",
-                            )
+                            current = bullet["current"]
+                            problem = bullet["problem"]
+                            suggested = bullet[
+                                "suggested_rewrite"
+                            ]
 
-                            problem = bullet.get(
-                                "problem",
-                                "",
-                            )
+                            # -------------------------------------
+                            # Better expander title
+                            # -------------------------------------
 
-                            suggested = bullet.get(
-                                "suggested_rewrite",
-                                "",
-                            )
+                            if current:
+
+                                preview = current
+
+                                if len(preview) > 65:
+                                    preview = preview[:65].rstrip() + "..."
+
+                                expander_title = (
+                                    f"Bullet {index} · {preview}"
+                                )
+
+                            else:
+
+                                expander_title = (
+                                    f"Bullet {index} · Suggested improvement"
+                                )
+
 
                             with st.expander(
-                                f"Bullet {index}"
+                                expander_title
                             ):
+
+                                # ---------------------------------
+                                # CURRENT BULLET
+                                # ---------------------------------
 
                                 if current:
 
@@ -1141,6 +1435,18 @@ if analyze:
                                         current
                                     )
 
+                                else:
+
+                                    st.caption(
+                                        "Original bullet was not returned "
+                                        "by the analysis service."
+                                    )
+
+
+                                # ---------------------------------
+                                # PROBLEM
+                                # ---------------------------------
+
                                 if problem:
 
                                     st.markdown(
@@ -1150,6 +1456,11 @@ if analyze:
                                     st.write(
                                         problem
                                     )
+
+
+                                # ---------------------------------
+                                # SUGGESTED REWRITE
+                                # ---------------------------------
 
                                 if suggested:
 
@@ -1162,7 +1473,21 @@ if analyze:
                                     )
 
 
-                    # ---------------------------------------------
+                                # ---------------------------------
+                                # WHY IT'S BETTER
+                                # ---------------------------------
+
+                                if problem and suggested:
+
+                                    st.markdown(
+                                        "**Why it's better**"
+                                    )
+
+                                    st.write(
+                                        "This version addresses the issue "
+                                        f"identified above: {problem}"
+                                    )
+# ---------------------------------------------
                     # STRENGTHS TO KEEP
                     # ---------------------------------------------
 
